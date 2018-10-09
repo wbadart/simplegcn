@@ -15,4 +15,8 @@ from setuptools import find_packages, setup
 setup(name='simplegcn',
       version='0.0.1-alpha',
       packages=find_packages(),
-      package_data={'': ['*.md']})
+      package_data={'': ['*.md']},
+      entry_points={
+          'console_scripts': ['simplegcn = simplegcn.__main__:main']
+      },
+     )
