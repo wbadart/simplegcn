@@ -16,7 +16,7 @@ def main():
     pip and then run `simplegcn --help` to see command line usage.
     """
     from argparse import ArgumentParser
-    parser = ArgumentParser()
+    parser = ArgumentParser(description='Create, train, and evaluate a GCN')
     parser.add_argument('-e', '--epochs', type=int, default=500,
                         help='Number of training epochs to run (default:500)')
     args = parser.parse_args()
