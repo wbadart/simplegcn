@@ -9,11 +9,14 @@ Will Badart
 created: OCT 2018
 """
 
+import warnings
 import numpy as np
 
 __all__ = [
     'GCN',
     'GCNLayer',
+    'relu',
+    'softmax',
 ]
 
 
@@ -21,6 +24,73 @@ class GCN(object):
     """The `GCN' class represents a complete network, to be trained and used
     for inference at the graph (as opposed to node) level.
     """
+    def __init__(self, d_in: int, d_hidden: int, d_out: int):
+        """Initialize a GCN with random weights and bias 0 at all layers. Uses
+        the architecture common in GCN literature: 2 convolutional layers with
+        relu activation. TODO: implement dropout.
+
+        Parameters
+        ==========
+        d_int : int
+            Input dimensionality (number of features per node of the graph)
+        d_hidden : int
+            Size of the hidden layer
+        d_out : int
+            Output dimensionality (number of output classes)
+        """
+        self._d_in = d_in
+        self._d_hidden = d_hidden
+        self._d_out = d_out
+
+        self._gc1 = GCNLayer(d_in, d_hidden)
+        self._gc2 = GCNLayer(d_hidden, d_out)
+
+    def __call__(self, X: np.ndarray, adj: np.ndarray):
+        """Forward propagate through the network.
+
+        Parameters
+        ==========
+        X : numpy.ndarray
+            Features of the learned graph
+        adj : numpy.ndarray
+            Adjacency matrix of the learned graph.
+
+        Returns
+        =======
+        output : np.ndarray
+            Predicted classes of each node(?)
+        """
+        H = self._gc1(X, adj)
+        H = relu(H)
+        H = self._gc2(H, adj)
+        return softmax(H)
+
+    def backward(self, X, y: np.ndarray, adj: np.ndarray, lr: float = 1e-5):
+        """Backpropagate errors through the network and update weights.
+
+        Parameters
+        ==========
+        TODO: loss : numpy.ndarray
+            Vector of loss values computed with network output and certain loss
+            function. Should be a vector that shares its length with the test
+            set.
+        adj : numpy.ndarray
+            Adjacency matrix representation of the graph
+        lr : float (optional)
+            Learning rate
+        """
+        h1 = self._gc1.last_output
+        h2 = self._gc2.last_output
+        delta2 = (h2 - y) * (h2 * (1 - h2))
+        delta1 = delta2.dot(self._gc2._W.T) * (h1 * (1 - h1))
+
+        self._gc2._W -= lr * h1.T.dot(delta2)
+        self._gc1._W -= lr * X.T.dot(delta1)
+
+    def __repr__(self):
+        return (
+            f'{self.__class__.__name__}(d_in={self._d_in}, '
+            f'd_hidden={self._d_hidden}, d_out={self._d_out})')
 
 
 class GCNLayer(object):
@@ -45,6 +115,7 @@ class GCNLayer(object):
 
         self._W = np.random.random((d_in, d_out))
         self._b = np.zeros(d_out)
+        self._last_output = None
 
     def __call__(self, X: np.ndarray, adj: np.ndarray):
         """Perform a forward pass through the network with the given input
@@ -66,18 +137,77 @@ class GCNLayer(object):
             Output of the layer, per the forward propagation rule described in
             Kipf & Welling.
         """
-        D = np.power(self._degree_matrix(adj), -1/2)
-        A = adj + np.identity(len(A))
-        return D * A * D * X * self._W
+        A = adj + np.identity(len(adj))
+        with warnings.catch_warnings():  # We know/ don't care about DivideByZero
+            warnings.simplefilter('ignore')
+            D = np.power(self._degree_matrix(A), -1/2)
+        D = np.where(np.isinf(D), 0, D)
+        self._last_output = D @ A @ D @ X @ self._W + self._b  # '@' = matmul, see PEP 465
+        return self._last_output
+
+    @property
+    def W(self):
+        """Weight matrix of the layer."""
+        return self._W
+
+    @W.setter
+    def _set_W(self, W: np.ndarray):
+        assert W.shape == self._W.shape
+        self._W = W
+
+    @property
+    def last_output(self):
+        """The most recent output of this layer. Used for backprop."""
+        return self._last_output
 
     @staticmethod
     def _degree_matrix(adj: np.ndarray):
         """Compute the diagonal degree matrix of a graph (in adjacency matrix
         form).
         """
-        return np.diag(adj.sum(axis=1).astype(float))
+        return np.diag(adj.sum(axis=1))
 
     def __repr__(self):
         return (
             f'{self.__class__.__name__}'
             f'(d_in={self._d_in}, d_out={self._d_out})')
+
+
+def relu(X: np.ndarray):
+    """Rectified linear unit. Sends negative values to zero and preserves
+    positive values.
+
+    Parameters
+    ==========
+    X : numpy.ndarray
+        Array-like structure on which to compute relu. Should be compatible
+        with numpy ufuncs. (So it could theoretically be a scalar.)
+
+    Returns
+    =======
+    output : numpy.ndarray
+        Rectified value(s)
+    """
+    return np.maximum(X, np.zeros(X.shape))
+
+
+def softmax(X: np.ndarray):
+    """Compute the softmax of an array-like object. Defined as the exponential
+    of the input divided by the sum of the exponential. See:
+
+    https://stackoverflow.com/questions/34968722/how-to-implement-the-softmax-function-in-python
+
+    for discussion.
+
+    Parameters
+    ==========
+    X : numpy.ndarray
+        Array-like object on which to compute softmax
+
+    Returns
+    =======
+    output : numpy.ndarray
+        Softmax'd array
+    """
+    e = np.exp(X - X.max(axis=1).reshape((-1, 1)))  # Subtract max for numeric stability
+    return e / e.sum(axis=1, keepdims=True)
