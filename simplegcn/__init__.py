@@ -10,3 +10,5 @@ packages already present in a typical data science environment).
 Will Badart
 created: OCT 2018
 """
+
+__version__ = '0.0.1a'
