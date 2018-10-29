@@ -24,6 +24,7 @@ class GCN(object):
     """The `GCN' class represents a complete network, to be trained and used
     for inference at the graph (as opposed to node) level.
     """
+
     def __init__(self, d_in: int, d_hidden: int, d_out: int):
         """Initialize a GCN with random weights and bias 0 at all layers. Uses
         the architecture common in GCN literature: 2 convolutional layers with
