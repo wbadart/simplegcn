@@ -21,4 +21,8 @@ setup(name='simplegcn',
       install_requires=[
           'numpy',
       ],
+
+      tests_require=[
+          'pytest',
+      ],
      )
