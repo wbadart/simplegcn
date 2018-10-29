@@ -1,7 +1,8 @@
 # virtualenv files
 bin/
-lib/
 include/
+lib/
+share/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
