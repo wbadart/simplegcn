@@ -120,7 +120,7 @@ class GCNLayer(object):
             warnings.simplefilter('ignore')
             D = np.power(self._degree_matrix(A), -1/2)
         D = np.where(np.isinf(D), 0, D)
-        return = D @ A @ D @ X @ self._W + self._b  # '@' = matmul, see PEP 465
+        return D @ A @ D @ X @ self._W + self._b  # '@' = matmul, see PEP 465
 
     @staticmethod
     def _degree_matrix(adj: np.ndarray):
