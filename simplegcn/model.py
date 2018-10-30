@@ -9,15 +9,15 @@ Will Badart
 created: OCT 2018
 """
 
-import warnings
-import numpy as np
-
 __all__ = [
     'GCN',
     'GCNLayer',
     'relu',
     'softmax',
 ]
+
+import warnings
+import numpy as np
 
 
 class GCN(object):
