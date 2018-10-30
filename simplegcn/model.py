@@ -66,28 +66,6 @@ class GCN(object):
         H = self._gc2(H, adj)
         return softmax(H)
 
-    def backward(self, X, y: np.ndarray, adj: np.ndarray, lr: float = 1e-5):
-        """Backpropagate errors through the network and update weights.
-
-        Parameters
-        ==========
-        TODO: loss : numpy.ndarray
-            Vector of loss values computed with network output and certain loss
-            function. Should be a vector that shares its length with the test
-            set.
-        adj : numpy.ndarray
-            Adjacency matrix representation of the graph
-        lr : float (optional)
-            Learning rate
-        """
-        h1 = self._gc1.last_output
-        h2 = self._gc2.last_output
-        delta2 = (h2 - y) * (h2 * (1 - h2))
-        delta1 = delta2.dot(self._gc2._W.T) * (h1 * (1 - h1))
-
-        self._gc2._W -= lr * h1.T.dot(delta2)
-        self._gc1._W -= lr * X.T.dot(delta1)
-
     def __repr__(self):
         return (
             f'{self.__class__.__name__}(d_in={self._d_in}, '
@@ -116,7 +94,6 @@ class GCNLayer(object):
 
         self._W = np.random.random((d_in, d_out))
         self._b = np.zeros(d_out)
-        self._last_output = None
 
     def __call__(self, X: np.ndarray, adj: np.ndarray):
         """Perform a forward pass through the network with the given input
@@ -143,23 +120,7 @@ class GCNLayer(object):
             warnings.simplefilter('ignore')
             D = np.power(self._degree_matrix(A), -1/2)
         D = np.where(np.isinf(D), 0, D)
-        self._last_output = D @ A @ D @ X @ self._W + self._b  # '@' = matmul, see PEP 465
-        return self._last_output
-
-    @property
-    def W(self):
-        """Weight matrix of the layer."""
-        return self._W
-
-    @W.setter
-    def _set_W(self, W: np.ndarray):
-        assert W.shape == self._W.shape
-        self._W = W
-
-    @property
-    def last_output(self):
-        """The most recent output of this layer. Used for backprop."""
-        return self._last_output
+        return = D @ A @ D @ X @ self._W + self._b  # '@' = matmul, see PEP 465
 
     @staticmethod
     def _degree_matrix(adj: np.ndarray):
