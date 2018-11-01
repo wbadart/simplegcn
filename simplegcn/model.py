@@ -150,7 +150,7 @@ def relu(X: np.ndarray):
     output : numpy.ndarray
         Rectified value(s)
     """
-    return np.maximum(X, np.zeros(X.shape))
+    return np.maximum(X, np.zeros(np.shape(X)))
 
 
 def softmax(X: np.ndarray):
