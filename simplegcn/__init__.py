@@ -11,6 +11,6 @@ Will Badart
 created: OCT 2018
 """
 
-from .model import *
+from simplegcn.model import *
 
 __version__ = '0.0.1a'
