@@ -12,7 +12,8 @@ created: OCT 2018
 import numpy as np
 from pytest import fixture
 
-from simplegcn import GCN, GCNLayer, relu, softmax
+from simplegcn import GCNLayer
+from simplegcn.demo import GCN, relu, softmax
 
 
 RANDOM_STATE = 0xdecafbad
