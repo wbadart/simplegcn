@@ -173,3 +173,23 @@ def softmax(X: np.ndarray):
     """
     e = np.exp(X - X.max(axis=1).reshape((-1, 1)))  # Subtract max for numeric stability
     return e / e.sum(axis=1, keepdims=True)
+
+
+def softmax_prime(X: np.ndarray):
+    """Compute the gradient of the softmax.
+
+    See:
+    https://medium.com/@aerinykim/how-to-implement-the-softmax-derivative-independently-from-any-loss-function-ae6d44363a9d
+
+    Parameters
+    ==========
+    X : numpy.ndarray
+        Softmax'd matrix
+
+    Returns
+    =======
+    output : numpy.ndarray
+        Derivative of the softmax values
+    """
+    s = X.reshape(-1,1)
+    return np.diagflat(s) - np.dot(s, s.T)
