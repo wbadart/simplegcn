@@ -4,6 +4,9 @@ include/
 lib/
 share/
 
+# Docker stuff
+.dockerignore
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
