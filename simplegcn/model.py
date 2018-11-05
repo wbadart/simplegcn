@@ -42,6 +42,12 @@ class GCNLayer(object):
         self._W = np.random.random((d_in, d_out))
         self._b = np.zeros(d_out)
 
+        self._output = None
+
+    @property
+    def output(self):
+        return self._output
+
     def __call__(self, X: np.ndarray, adj: np.ndarray):
         """Perform a forward pass through the network with the given input
         features `X' and adjacency matrix `adj'. Note, while the paper
@@ -63,7 +69,8 @@ class GCNLayer(object):
             Output of the layer, per the forward propagation rule described in
             Kipf & Welling.
         """
-        return adj @ X @ self._W + self._b  # '@' = matmul, see PEP 465
+        self._output = adj @ X @ self._W + self._b  # '@' = matmul, see PEP 465
+        return self._output
 
     def __repr__(self):
         return (
