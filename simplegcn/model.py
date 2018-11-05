@@ -87,7 +87,7 @@ def adj_normalized(adj: np.ndarray):
     """Adjacency matrix normalized according to the pre-processing described in
     Kipf & Welling.
     """
-    adj_norm = np.identity(len(adj))
+    adj_norm = adj + np.identity(len(adj))
     with warnings.catch_warnings():  # We know/ don't care about DivideByZero
         warnings.simplefilter('ignore')
         diag = np.power(degree_matrix(adj_norm), -1/2)
